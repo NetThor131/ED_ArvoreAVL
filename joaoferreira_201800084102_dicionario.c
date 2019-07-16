@@ -14,35 +14,35 @@ typedef struct
     Sinonimo *sinonimos;
 } Palavra;
 
-typedef struct node
+typedef struct no
 {
     Palavra chave;
-    struct node *filhoDir;
-    struct node *filhoEsq;
+    struct no *dir;
+    struct no *esq;
     int balanco;
-} noh;
+} NO;
 
-void caso1(noh **raiz, int *alterou)
+void caso1(NO **raiz, int *alterou)
 {
-    noh *u;
-    noh *v;
-    u = malloc(sizeof(noh));
-    u = (*raiz)->filhoEsq;
+    NO *u;
+    NO *v;
+    u = malloc(sizeof(NO));
+    u = (*raiz)->esq;
 
     if (u->balanco == -1)
     {
-        (*raiz)->filhoEsq = u->filhoDir;
-        u->filhoDir = *raiz;
+        (*raiz)->esq = u->dir;
+        u->dir = *raiz;
         (*raiz)->balanco = 0;
         (*raiz) = u;
     }
     else
     {
-        v = u->filhoDir;
-        u->filhoDir = v->filhoEsq;
-        v->filhoEsq = u;
-        (*raiz)->filhoEsq = v->filhoDir;
-        v->filhoDir = (*raiz);
+        v = u->dir;
+        u->dir = v->esq;
+        v->esq = u;
+        (*raiz)->esq = v->dir;
+        v->dir = (*raiz);
         if (v->balanco == -1)
             (*raiz)->balanco = 1;
         else
@@ -57,28 +57,27 @@ void caso1(noh **raiz, int *alterou)
     (*alterou) = 0;
 }
 
-void caso2(noh **raiz, int *alterou)
+void caso2(NO **raiz, int *alterou)
 {
-    noh *u;
-    noh *v;
-
-    u = malloc(sizeof(noh));
-    u = (*raiz)->filhoDir;
+    NO *u;
+    NO *v;
+    u = malloc(sizeof(NO));
+    u = (*raiz)->dir;
 
     if (u->balanco == 1)
     {
-        (*raiz)->filhoDir = u->filhoEsq;
-        u->filhoEsq = *raiz;
+        (*raiz)->dir = u->esq;
+        u->esq = *raiz;
         (*raiz)->balanco = 0;
         (*raiz) = u;
     }
     else
     {
-        v = u->filhoEsq;
-        u->filhoEsq = v->filhoDir;
-        v->filhoDir = u;
-        (*raiz)->filhoDir = v->filhoEsq;
-        v->filhoEsq = (*raiz);
+        v = u->esq;
+        u->esq = v->dir;
+        v->dir = u;
+        (*raiz)->dir = v->esq;
+        v->esq = (*raiz);
         if (v->balanco == 1)
             (*raiz)->balanco = -1;
         else
@@ -93,13 +92,13 @@ void caso2(noh **raiz, int *alterou)
     *alterou = 0;
 }
 
-void insereNumaAVL(Palavra x, noh **raiz, int *alterou)
+void insereNumaAVL(Palavra x, NO **raiz, int *alterou)
 {
     if (*raiz == NULL)
     {
-        *raiz = (noh *)malloc(sizeof(noh));
-        (*raiz)->filhoEsq = NULL;
-        (*raiz)->filhoDir = NULL;
+        *raiz = (NO *)malloc(sizeof(NO));
+        (*raiz)->esq = NULL;
+        (*raiz)->dir = NULL;
         (*raiz)->chave = x;
         (*raiz)->balanco = 0;
         *alterou = 1;
@@ -108,7 +107,7 @@ void insereNumaAVL(Palavra x, noh **raiz, int *alterou)
     {
         if (strcmp(x.palavra, (*raiz)->chave.palavra) < 0)
         {
-            insereNumaAVL(x, &((*raiz)->filhoEsq), alterou);
+            insereNumaAVL(x, &((*raiz)->esq), alterou);
             if (*alterou)
             {
                 if ((*raiz)->balanco == 1)
@@ -122,14 +121,12 @@ void insereNumaAVL(Palavra x, noh **raiz, int *alterou)
                         (*raiz)->balanco = -1;
                     else if ((*raiz)->balanco == -1)
                         caso1(raiz, alterou);
-                    else
-                        fprintf(stderr, "erro inesperado\n");
                 }
             }
         }
         else if (strcmp(x.palavra, (*raiz)->chave.palavra) > 0)
         {
-            insereNumaAVL(x, &((*raiz)->filhoDir), alterou);
+            insereNumaAVL(x, &((*raiz)->dir), alterou);
             if (*alterou)
             {
                 if ((*raiz)->balanco == -1)
@@ -143,20 +140,18 @@ void insereNumaAVL(Palavra x, noh **raiz, int *alterou)
                         (*raiz)->balanco = 1;
                     else if ((*raiz)->balanco == 1)
                         caso2(raiz, alterou);
-                    else
-                        fprintf(stderr, "erro inesperado\n");
                 }
             }
         }
     }
 }
 
-int consulta(noh **raiz, char valor[31], FILE **output)
+int consulta(NO **raiz, char valor[31], FILE **output)
 {
     if (raiz == NULL)
         return 0;
-    noh *atual;
-    atual = malloc(sizeof(noh));
+    NO *atual;
+    atual = malloc(sizeof(NO));
     atual = (*raiz);
     fprintf(*output, "[");
     while (atual != NULL)
@@ -176,12 +171,12 @@ int consulta(noh **raiz, char valor[31], FILE **output)
         if (strcmp(valor, atual->chave.palavra) > 0)
         {
             fprintf(*output, "%s->", atual->chave.palavra);
-            atual = atual->filhoDir;
+            atual = atual->dir;
         }
         else if (strcmp(valor, atual->chave.palavra) < 0)
         {
             fprintf(*output, "%s->", atual->chave.palavra);
-            atual = atual->filhoEsq;
+            atual = atual->esq;
         }
     }
     fprintf(*output, "?]\n-\n");
@@ -191,27 +186,32 @@ int consulta(noh **raiz, char valor[31], FILE **output)
 int main(int argc, char *argv[])
 {
     int h;
-    noh *raiz = NULL;
+    NO *raiz = NULL;
 
     FILE *input = fopen(argv[1], "r");
     FILE *output = fopen(argv[2], "w");
 
     int qntd = 0, qntdsin = 0;
     char palavra[31], sinonimo[31];
+
     fscanf(input, "%i", &qntd);
+
     Palavra *palavras;
     palavras = (Palavra *)malloc(qntd * sizeof(Palavra));
+
     for (int i = 0; i < qntd; i++)
     {
         fscanf(input, "%s %i", palavra, &qntdsin);
         strcpy(palavras[i].palavra, palavra);
         palavras[i].len = qntdsin;
         palavras[i].sinonimos = (Sinonimo *)malloc(qntdsin * sizeof(Sinonimo));
+
         for (int x = 0; x < qntdsin; x++)
         {
             fscanf(input, "%s", sinonimo);
             strcpy(palavras[i].sinonimos[x].sinonimo, sinonimo);
         }
+        
         insereNumaAVL(palavras[i], &raiz, &h);
     }
 
