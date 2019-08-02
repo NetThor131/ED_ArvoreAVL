@@ -185,41 +185,63 @@ int consulta(NO **raiz, char valor[31], FILE **output)
 
 int main(int argc, char *argv[])
 {
+    printf("inicio do main\n");
     int h;
+    printf("1\n");
     NO *raiz = NULL;
+    printf("criei a arvore\n");
 
     FILE *input = fopen(argv[1], "r");
+    printf("input\n");
     FILE *output = fopen(argv[2], "w");
+    printf("output\n");
 
     int qntd = 0, qntdsin = 0;
+    printf("qntd e qntdsin\n");
     char palavra[31], sinonimo[31];
+    printf("palavra e sinonimo\n");
 
     fscanf(input, "%i", &qntd);
+    printf("qntd = %i\n", qntd);
 
     Palavra *palavras;
+    printf("vetor de palavras\n");
     palavras = (Palavra *)malloc(qntd * sizeof(Palavra));
+    printf("malloc no vetor de palavras\n");
 
     for (int i = 0; i < qntd; i++)
     {
+        printf("primeiro for\n");
         fscanf(input, "%s %i", palavra, &qntdsin);
+        printf("palavra = %s e qntd de sinonimos = %i\n", palavra, qntdsin);
         strcpy(palavras[i].palavra, palavra);
+        printf("palavras[i].palavra = %s\n", palavras[i].palavra);
         palavras[i].len = qntdsin;
+        printf("palavras[i].len = %i\n", palavras[i].len);
         palavras[i].sinonimos = (Sinonimo *)malloc(qntdsin * sizeof(Sinonimo));
+        printf("malloc no sinonimos\n");
 
         for (int x = 0; x < qntdsin; x++)
         {
+            printf("for dentro do primeiro for\n");
             fscanf(input, "%s", sinonimo);
+            printf("sinonimo = %s\n", sinonimo);
             strcpy(palavras[i].sinonimos[x].sinonimo, sinonimo);
+            printf("palavras[i].sinonimos[x].sinonimo = %s\n", palavras[i].sinonimos[x].sinonimo);
         }
-        
         insereNumaAVL(palavras[i], &raiz, &h);
+        printf("insercao\n");
     }
 
     fscanf(input, "%i", &qntd);
+    printf("qntd = %i\n", qntd);
     for (int i = 0; i < qntd; i++)
     {
+        printf("segundo for\n");
         fscanf(input, "%s", palavra);
+        printf("palavra = %s", palavra);
         consulta(&raiz, palavra, &output);
+        printf("consulta\n");
     }
 
     fclose(input);
